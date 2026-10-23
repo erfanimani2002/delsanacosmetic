@@ -1,0 +1,233 @@
+/* ==========================================================
+   Modern CSS Reset / Base Styles
+   Updated: 2026
+   ========================================================== */
+
+/* Padding and borders should not change an element's declared size. */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+}
+
+/* Hidden means hidden. */
+[hidden] {
+    display: none !important;
+}
+
+/* Allows transitions to and from intrinsic sizes (height:auto, etc.). */
+@media (prefers-reduced-motion: no-preference) {
+    html {
+        interpolate-size: allow-keywords;
+    }
+}
+
+/* Respect users who prefer reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+    html:focus-within {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-delay: 0ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        transition-delay: 0ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Prevent font-size inflation on mobile browsers. */
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+
+    /* Prevent layout shift when scrollbars appear/disappear. */
+    scrollbar-gutter: stable;
+}
+
+/* Ensure the page fills the viewport. */
+body {
+    min-height: 100vh;
+    min-height: 100svh;
+
+    /* Improve font rendering. */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    /* WCAG recommends at least 1.5 for body copy. */
+    line-height: 1.5;
+}
+
+/* Tighter line-height for headings. */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    line-height: 1.1;
+}
+
+/* Prevent long words and URLs from overflowing. */
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    overflow-wrap: break-word;
+}
+
+/* Better text wrapping where supported. */
+p {
+    text-wrap: pretty;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    text-wrap: balance;
+}
+
+/* Headings should be styled by your design system. */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font: inherit;
+}
+
+/* Responsive media elements. */
+img,
+picture,
+video,
+canvas,
+svg,
+embed,
+iframe,
+object,
+audio {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+/* Don't constrain explicitly-sized SVG icons. */
+svg[width][height] {
+    max-width: revert;
+}
+
+/* Remove default button styling. */
+button {
+    background: none;
+    border: none;
+}
+
+/* Inherit typography. */
+input,
+button,
+textarea,
+select {
+    font: inherit;
+}
+
+/* Keep appearance reset (intentionally retained). */
+input,
+button,
+textarea,
+select {
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+/* Interactive cursor. */
+button,
+[role="button"],
+label,
+summary,
+select {
+    cursor: pointer;
+}
+
+/* Links inherit surrounding text color. */
+a {
+    color: inherit;
+}
+
+/* Remove default list markers. */
+ul,
+ol {
+    list-style: none;
+}
+
+/* Better default tables. */
+table {
+    border-collapse: collapse;
+}
+
+th {
+    font-weight: inherit;
+}
+
+/* Remove default fieldset styling. */
+fieldset {
+    border: none;
+    padding: 0;
+}
+
+/* Normalize sub/sup. */
+sub,
+sup {
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+}
+
+sub {
+    bottom: -0.25em;
+}
+
+sup {
+    top: -0.5em;
+}
+
+/* Monospace elements inherit surrounding font size. */
+pre,
+code,
+kbd,
+samp {
+    font-family: monospace;
+    font-size: inherit;
+}
+
+/* Remove automatic quotation marks. */
+blockquote,
+q {
+    quotes: none;
+}
+
+blockquote::before,
+blockquote::after,
+q::before,
+q::after {
+    content: none;
+}
+
+/* Create an isolated stacking context for SPA roots. */
+#root {
+    isolation: isolate;
+}

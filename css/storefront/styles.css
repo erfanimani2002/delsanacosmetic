@@ -1,0 +1,253 @@
+body {
+    font-family: 'Uni Neue', sans-serif;
+    background-color: #f9f9f5;
+    max-width: 480px;
+    min-width: 370px;
+    margin: auto;
+    padding: 0 8px;
+    position: relative;
+}
+
+/* Header */
+
+header {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    align-items: center;
+
+    position: sticky;
+    z-index: 99;
+    top: 0;
+
+    width: 100%;
+    padding: 4px 0;
+}
+
+.header-left {
+    width: 64px;
+}
+
+.header-right {
+    display: flex;
+    gap: 16px;
+}
+
+/* Hero */
+
+.hero {
+    display: flex;
+    width: 100%;
+    position: relative;
+}
+
+.hero-img {
+    width: 100%;
+
+    overflow: hidden;
+
+}
+
+.hero-img img {
+    width: 100%;
+    height: 186px;
+    object-fit: cover;
+    object-position: left center;
+    border-radius: 8px;
+}
+
+.hero-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+
+    margin: 24px;
+}
+
+.hero-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+}
+
+.hero-text h1 {
+    font-size: 48px;
+    font-weight: 700;
+    align-self: flex-end;
+}
+.hero-text span {
+    font-size: 8px;
+    font-weight: 500;
+    margin-top: -12px;
+    align-self: flex-start;
+}
+.hero-text p {
+    font-size: 10px;
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+.hero-actions {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    background-color: #455e3d;
+    box-shadow: 0 0 4px rgb(67 79 38 / 0.2);
+    color: #eff2eb;
+
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1;
+
+    padding: 4px 12px;
+    border-radius: 9999px;
+    margin-top: 8px;
+
+}
+
+.hero-actions span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+    transform: translateY(-1px);
+}
+
+.hero-actions svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+    flex-shrink: 0;
+    transform: none;
+}
+
+.links {
+    display: flex;
+    flex-direction: column;
+    margin-top: 8px;
+
+}
+
+.banner-btn {
+    width: 100%;
+    height: 48px;
+    position: relative;
+}
+
+.banner-btn img{
+    width: 100%;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 8px;
+
+}
+
+.banner-details {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    z-index: 5;
+
+    display: flex;
+    align-items: center;
+    transform: translateY(-50%);
+}
+
+.logo {
+    background-color: #dbddc9;
+    padding: 4px;
+    border-radius: 50%;
+    margin-left: 12px;
+
+    box-shadow: 0 0 4px rgb(67 79 38 / 0.2);
+}
+
+.banner-text h2 {
+    font-size: 12px;
+}
+
+.banner-text  span{
+    display: flex;
+    gap: 4px;
+}
+
+.banner-text  span p {
+    font-size: 8px;
+    transform: translateY(-1px);
+
+
+}
+
+.banner-text  span svg {
+    width: 12px;
+}
+
+/* categories*/
+
+.categories {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 16px 8px 8px;
+}
+
+.title {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px 14px;
+}
+
+.category-card {
+    grid-column: span 2;
+    min-width: 0;
+    height: 96px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    overflow: hidden;
+    text-decoration: none;
+    color: #344238;
+    background-color: #f0f1e9;
+    border-radius: 10px;
+    padding: 7px 8px 10px;
+}
+
+.category-card:nth-child(4),
+.category-card:nth-child(5) {
+    grid-column: span 3;
+}
+
+.category-card img {
+    display: block;
+    width: 100%;
+    height: 78%;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+}
+
+.category-card span {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    white-space: nowrap;
+}
