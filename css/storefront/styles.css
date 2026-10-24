@@ -48,18 +48,24 @@
     --font-size-2xl: 22px;
     --font-size-3xl: 24px;
     --font-size-display: 52px;
+    --font-size-footer-title: 8px;
+    --font-size-footer-subtle: 6px;
 }
 
 body {
     font-family: 'Uni Neue', sans-serif;
     background-color: var(--color-background);
-    max-width: 480px;
-    min-width: 370px;
-    margin: auto;
-    padding: 0 8px;
-    position: relative;
-}
 
+
+
+}
+ main {
+     max-width: 480px;
+     min-width: 370px;
+     margin: auto;
+     padding: 0 8px;
+     position: relative;
+ }
 /* Header */
 
 header {
@@ -74,9 +80,6 @@ header {
     z-index: 99;
     top: 0;
 
-
-    margin-left: -8px;
-    margin-right: -8px;
     padding: 4px 8px;
 
 }
@@ -650,7 +653,7 @@ header {
 /* Footer */
 
 .site-footer {
-    width: calc(100% + 16px);
+    width: 100%;
     box-sizing: border-box;
     margin-top: 16px;
     padding: 8px 32px;
@@ -658,8 +661,7 @@ header {
     background-color: var(--color-surface-translucent);
     color: var(--color-text-secondary);
 
-    margin-left: -8px;
-    margin-right: -8px;
+    margin: 16px auto 0;
 }
 
 .footer-content {
@@ -712,7 +714,7 @@ header {
 
 .footer-column h3 {
     margin: 0 0 10px;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-footer-title);
     font-weight: 700;
     line-height: 1.5;
     white-space: nowrap;
@@ -721,7 +723,7 @@ header {
 .footer-column p,
 .footer-column > a {
     margin: 0;
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-footer-subtle);
     font-weight: 400;
     line-height: 1.8;
     color: var(--color-text-muted);
