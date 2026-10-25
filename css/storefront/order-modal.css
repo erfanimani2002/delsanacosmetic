@@ -1,0 +1,115 @@
+/* ==========================================================
+   Order popup — modal shell & control normalization
+   The popup card itself is styled in styles.css. This file only
+   adds the layer that turns it into a dialog and normalizes the
+   controls without changing their visual design.
+   ========================================================== */
+
+.order-popup-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 16px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+
+    background: rgb(30 39 33 / 45%);
+
+    /* Keep the card exactly as wide as it is in the static design. */
+    scrollbar-width: none;
+}
+
+.order-popup-overlay::-webkit-scrollbar {
+    display: none;
+}
+
+.order-popup-overlay .order-popup {
+    width: 100%;
+    max-width: 448px;
+    margin: auto;
+    flex: 0 0 auto;
+}
+
+/* The original card had a 16px margin. The overlay's padding now
+   provides the same gap while allowing the card to center when
+   there is enough room. */
+
+html.modal-open {
+    overflow: hidden;
+
+    /* Dim the scrollbar gutter too, so the dialog backdrop reaches the
+       window edge even when the root reserves a stable scrollbar. */
+    background: #979b95;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+/* Buttons used for the icon controls keep the SVG styling intact. */
+.order-popup .icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    line-height: 0;
+    cursor: pointer;
+}
+
+/* Quantity controls inherit the surrounding text color instead of
+   the browser's default button color. Disabled buttons keep the
+   same appearance as the original static control. */
+.order-popup .quantity-btn {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    line-height: inherit;
+    cursor: pointer;
+}
+
+.order-popup .quantity-btn:disabled {
+    color: inherit;
+    opacity: 1;
+    cursor: default;
+}
+
+/* Thumbnails are buttons so they are keyboard accessible. They take
+   the same width the original images had in the flex row. */
+.order-popup .product-alt-imgs .thumb {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    border-radius: 12px;
+    line-height: 0;
+    cursor: pointer;
+}
+
+.order-popup .product-alt-imgs .thumb img {
+    width: 100%;
+}
+
+.order-popup .wishlist-btn[aria-pressed="true"] svg {
+    fill: currentColor;
+}
+
+.visually-hidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
