@@ -1,6 +1,7 @@
 /* ==========================================================
    Order popup behavior
-   Keeps presentation in CSS and all interaction/state here.
+   Presentation stays in CSS. Catalog data and local cart/wishlist
+   state are shared with the rest of the storefront.
    ========================================================== */
 
 (() => {
@@ -12,15 +13,22 @@
     const popup = overlay.querySelector(".order-popup");
     if (!popup) return;
 
+    const catalog = window.DelsanaCatalog;
+    const store = window.DelsanaStore;
+    if (!catalog || !store) return;
+
     const closeButton = overlay.querySelector("[data-popup-close]");
     const wishlistButtons = Array.from(overlay.querySelectorAll("[data-popup-wishlist]"));
     const wishlistLabel = overlay.querySelector("[data-wishlist-label]");
+    const status = document.getElementById("orderPopupStatus");
 
     const heroImage = overlay.querySelector("[data-gallery-hero]");
     const thumbnails = Array.from(overlay.querySelectorAll("[data-gallery-thumb]"));
     const previousImageButton = overlay.querySelector("[data-gallery-prev]");
     const nextImageButton = overlay.querySelector("[data-gallery-next]");
 
+    const sizeLabel = document.getElementById("orderSizeLabel");
+    const sizeGroup = overlay.querySelector(".options");
     const sizeOptions = Array.from(overlay.querySelectorAll("[data-size-option]"));
     const quantityValue = overlay.querySelector("[data-quantity-value]");
     const decreaseButton = overlay.querySelector("[data-quantity-minus]");
@@ -31,8 +39,10 @@
     const addToCartLabel = overlay.querySelector("[data-add-label]");
     const shareButton = overlay.querySelector("[data-share]");
     const shareLabel = overlay.querySelector("[data-share-label]");
-    const status = document.getElementById("orderPopupStatus");
     const title = document.getElementById("orderPopupTitle");
+    const category = document.getElementById("orderPopupCategory");
+    const attributeContainer = overlay.querySelector(".product-attribute");
+    const grantLabels = Array.from(overlay.querySelectorAll(".grants-item span"));
 
     if (
         !closeButton ||
@@ -50,40 +60,19 @@
         return;
     }
 
-    const STORAGE_KEYS = {
-        cart: "delsana:cart",
-        wishlist: "delsana:wishlist",
-    };
-
-    const MIN_QUANTITY = 1;
-    const MAX_QUANTITY = 99;
+    const MIN_QUANTITY = store.minQuantity;
+    const MAX_QUANTITY = store.maxQuantity;
     const FEEDBACK_DURATION = 2200;
-
-    const WISHLIST_ADD_LABEL = wishlistLabel.textContent.trim();
-    const WISHLIST_REMOVE_LABEL = "حذف از علاقه مندی";
+    const WISHLIST_ADD_LABEL = "افزودن به علاقه‌مندی";
+    const WISHLIST_REMOVE_LABEL = "حذف از علاقه‌مندی";
     const DEFAULT_ADD_LABEL = addToCartLabel.textContent.trim();
     const DEFAULT_SHARE_LABEL = shareLabel.textContent.trim();
-    const DEFAULT_SIZE = sizeOptions.find(option => option.hasAttribute("data-default-size"))
-        || sizeOptions[0]
-        || null;
-
-    const priceFormatter = new Intl.NumberFormat("en-US");
     const supportsInert = "inert" in HTMLElement.prototype;
     const backgroundElements = Array.from(document.querySelectorAll("header, main, footer"));
 
-    const product = {
-        id: popup.dataset.productId || "delsana-product",
-        name: title ? title.textContent.trim() : "",
-        basePrice: parsePrice(popup.dataset.unitPrice || priceValue.textContent),
-    };
-
-    const gallery = thumbnails.map((thumbnail, index) => {
-        const image = thumbnail.querySelector("img");
-        return {
-            src: image ? image.getAttribute("src") : "",
-            alt: image ? image.getAttribute("alt") || `تصویر محصول ${index + 1}` : "",
-        };
-    });
+    let product = catalog.products[0];
+    let gallery = product.gallery;
+    let selectedSize = catalog.getDefaultSize(product);
 
     const state = {
         quantity: MIN_QUANTITY,
@@ -95,71 +84,117 @@
 
     /* ---------- Helpers ---------- */
 
-    function toLatinDigits(value) {
-        return String(value)
-            .replace(/[۰-۹]/g, digit => "۰۱۲۳۴۵۶۷۸۹".indexOf(digit))
-            .replace(/[٠-٩]/g, digit => "٠١٢٣٤٥٦٧٨٩".indexOf(digit));
-    }
-
-    function parsePrice(value) {
-        const digits = toLatinDigits(value).replace(/[^\d]/g, "");
-        const parsed = Number(digits);
-        return Number.isFinite(parsed) ? parsed : 0;
-    }
-
-    function formatPrice(value) {
-        return priceFormatter.format(value);
-    }
-
-    function readStorage(key, fallback) {
-        try {
-            const raw = localStorage.getItem(key);
-            return raw ? JSON.parse(raw) : fallback;
-        } catch (error) {
-            return fallback;
-        }
-    }
-
-    function writeStorage(key, value) {
-        try {
-            localStorage.setItem(key, JSON.stringify(value));
-            return true;
-        } catch (error) {
-            console.warn(`Could not save ${key} in localStorage.`, error);
-            return false;
-        }
-    }
-
     function announce(message) {
         if (!status) return;
         status.textContent = message;
     }
 
     function getSelectedSize() {
-        return sizeOptions.find(option => option.classList.contains("selected")) || DEFAULT_SIZE;
+        return sizeOptions.find(option => option.classList.contains("selected"))
+            || selectedSize;
     }
 
     function getUnitPrice() {
-        const selectedSize = getSelectedSize();
-        if (!selectedSize) return product.basePrice;
-
-        const variantPrice = parsePrice(selectedSize.dataset.unitPrice || "");
-        return variantPrice > 0 ? variantPrice : product.basePrice;
-    }
-
-    function getWishlist() {
-        const stored = readStorage(STORAGE_KEYS.wishlist, []);
-        return Array.isArray(stored) ? stored.filter(item => typeof item === "string") : [];
+        const option = getSelectedSize();
+        const optionPrice = option ? Number(option.dataset.unitPrice) : 0;
+        return optionPrice > 0 ? optionPrice : product.price;
     }
 
     function isWishlisted() {
-        return getWishlist().includes(product.id);
+        return store.isWishlisted(product.id);
+    }
+
+    /* ---------- Product data ---------- */
+
+    function renderAttributes(attributes) {
+        if (!attributeContainer) return;
+
+        const dot = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dot preview-icon" aria-hidden="true"><circle cx="12" cy="12" r="1"/></svg>';
+
+        const list = (Array.isArray(attributes) ? attributes : []).slice(0, 3);
+
+        attributeContainer.innerHTML = list
+            .map((attribute, index) => {
+                const suffix = index < list.length - 1 ? dot : "";
+                return `<span>${attribute}</span>${suffix}`;
+            })
+            .join("");
+    }
+
+    function renderGallery(items) {
+        gallery = Array.isArray(items) && items.length ? items : [{ src: product.image, alt: product.name }];
+
+        thumbnails.forEach((thumbnail, index) => {
+            const image = thumbnail.querySelector("img");
+            const item = gallery[index];
+            thumbnail.hidden = !item;
+
+            if (!image || !item) return;
+            image.src = item.src;
+            image.alt = item.alt || product.name;
+            thumbnail.setAttribute("aria-label", `تصویر ${index + 1}`);
+        });
+
+        state.galleryIndex = 0;
+        setGallery(0);
+    }
+
+    function renderSizes(sizes) {
+        const list = Array.isArray(sizes) && sizes.length
+            ? sizes
+            : [{ label: "استاندارد", price: product.price, default: true }];
+
+        const hasMultiple = list.length > 1;
+        if (sizeLabel) sizeLabel.hidden = !hasMultiple;
+        if (sizeGroup) sizeGroup.hidden = !hasMultiple;
+
+        sizeOptions.forEach((option, index) => {
+            const size = list[index];
+            option.hidden = !size;
+            option.dataset.unitPrice = size ? String(size.price) : "";
+
+            if (!size) {
+                option.textContent = "";
+                option.classList.remove("selected");
+                option.setAttribute("aria-pressed", "false");
+                return;
+            }
+
+            option.textContent = size.label;
+            const isDefault = index === list.findIndex(item => item.default);
+            option.classList.toggle("selected", isDefault || (!hasMultiple && index === 0));
+            option.setAttribute("aria-pressed", String(option.classList.contains("selected")));
+        });
+
+        selectedSize = sizeOptions.find(option => option.classList.contains("selected"))
+            || sizeOptions[0];
+    }
+
+    function populateProduct(nextProduct) {
+        product = nextProduct || catalog.products[0];
+        popup.dataset.productId = product.id;
+        popup.dataset.unitPrice = String(product.price);
+
+        if (title) title.textContent = product.name;
+        if (category) category.textContent = product.categoryLabel;
+        if (heroImage) heroImage.alt = product.name;
+
+        renderAttributes(product.attributes);
+
+        grantLabels.forEach((label, index) => {
+            label.textContent = product.badges[index] || "";
+        });
+
+        renderGallery(product.gallery);
+        renderSizes(product.sizes);
+        setQuantity(MIN_QUANTITY);
+        syncWishlistState();
     }
 
     /* ---------- Popup state ---------- */
 
     function updatePrice() {
-        priceValue.textContent = formatPrice(getUnitPrice() * state.quantity);
+        priceValue.textContent = store.formatPrice(getUnitPrice() * state.quantity);
     }
 
     function setQuantity(nextQuantity) {
@@ -174,8 +209,9 @@
     }
 
     function setSize(option) {
-        if (!option) return;
+        if (!option || option.hidden) return;
 
+        selectedSize = option;
         sizeOptions.forEach(sizeOption => {
             const isSelected = sizeOption === option;
             sizeOption.classList.toggle("selected", isSelected);
@@ -193,18 +229,15 @@
 
         if (currentImage.src) heroImage.src = currentImage.src;
         heroImage.alt = product.name
-            ? `${product.name}، ${currentImage.alt}`
-            : currentImage.alt;
+            ? `${product.name}، ${currentImage.alt || ""}`
+            : currentImage.alt || product.name;
 
         thumbnails.forEach((thumbnail, thumbnailIndex) => {
             const isCurrent = thumbnailIndex === state.galleryIndex;
             const thumbnailImage = thumbnail.querySelector("img");
 
-            if (isCurrent) {
-                thumbnail.setAttribute("aria-current", "true");
-            } else {
-                thumbnail.removeAttribute("aria-current");
-            }
+            if (isCurrent) thumbnail.setAttribute("aria-current", "true");
+            else thumbnail.removeAttribute("aria-current");
 
             if (thumbnailImage) {
                 thumbnailImage.classList.toggle("active", isCurrent);
@@ -243,9 +276,7 @@
 
     function showFeedback(labelElement, defaultLabel, message, statusMessage = message) {
         const existingFeedback = feedbackTimers.get(labelElement);
-        if (existingFeedback) {
-            window.clearTimeout(existingFeedback.timer);
-        }
+        if (existingFeedback) window.clearTimeout(existingFeedback.timer);
 
         labelElement.textContent = message;
         announce(statusMessage);
@@ -260,79 +291,36 @@
 
     function resetPopup() {
         clearFeedback();
-        setSize(DEFAULT_SIZE);
         setQuantity(MIN_QUANTITY);
-        setGallery(0);
-        syncWishlistState();
     }
 
     /* ---------- Cart, wishlist, and sharing ---------- */
 
     function addToCart() {
-        const selectedSize = getSelectedSize();
+        const size = getSelectedSize();
         const item = {
             id: product.id,
             name: product.name,
-            size: selectedSize ? selectedSize.textContent.trim() : "",
+            size: size ? size.textContent.trim() : "",
             quantity: state.quantity,
             unitPrice: getUnitPrice(),
-            image: heroImage.getAttribute("src") || "",
+            image: heroImage.getAttribute("src") || product.image,
         };
 
-        const storedCart = readStorage(STORAGE_KEYS.cart, []);
-        const cart = Array.isArray(storedCart) ? storedCart : [];
-        const existingItem = cart.find(
-            cartItem => cartItem.id === item.id && cartItem.size === item.size
-        );
+        const result = store.addToCart(item);
 
-        if (existingItem) {
-            existingItem.quantity += item.quantity;
-        } else {
-            cart.push(item);
-        }
-
-        const saved = writeStorage(STORAGE_KEYS.cart, cart);
-
-        window.dispatchEvent(new CustomEvent("delsana:cart:add", { detail: item }));
         showFeedback(
             addToCartLabel,
             DEFAULT_ADD_LABEL,
-            saved ? "به سبد خرید اضافه شد" : "ذخیره نشد",
-            saved ? "به سبد خرید اضافه شد" : "ذخیره سبد خرید ممکن نشد"
+            result.saved ? "به سبد خرید اضافه شد" : "ذخیره نشد",
+            result.saved ? "به سبد خرید اضافه شد" : "ذخیره سبد خرید ممکن نشد"
         );
     }
 
     function toggleWishlist() {
-        const wishlist = getWishlist();
-        const index = wishlist.indexOf(product.id);
-
-        if (index >= 0) {
-            wishlist.splice(index, 1);
-        } else {
-            wishlist.push(product.id);
-        }
-
-        const saved = writeStorage(STORAGE_KEYS.wishlist, wishlist);
+        const result = store.toggleWishlist(product.id);
         syncWishlistState();
-
-        window.dispatchEvent(new CustomEvent("delsana:wishlist:change", {
-            detail: {
-                id: product.id,
-                active: index < 0,
-                wishlist: [...wishlist],
-            },
-        }));
-
-        if (!saved) {
-            announce("ذخیره علاقه مندی ممکن نشد");
-            return;
-        }
-
-        announce(
-            index >= 0
-                ? "از علاقه مندی حذف شد"
-                : "به علاقه مندی اضافه شد"
-        );
+        announce(result.active ? "به علاقه‌مندی اضافه شد" : "از علاقه‌مندی حذف شد");
     }
 
     async function copyText(text) {
@@ -369,9 +357,7 @@
     async function shareProduct() {
         const shareData = {
             title: product.name,
-            text: product.name
-                ? `${product.name} — ${formatPrice(getUnitPrice())} تومان`
-                : document.title,
+            text: `${product.name} — ${store.formatPrice(getUnitPrice())} تومان`,
             url: window.location.href,
         };
 
@@ -410,10 +396,15 @@
         ).filter(element => element.getClientRects().length > 0);
     }
 
-    function openPopup(trigger) {
+    function openPopup(trigger, productId) {
         if (!overlay.hidden) return;
 
+        const nextProductId = productId
+            || trigger?.closest(".product-card")?.dataset.productId
+            || catalog.products[0].id;
+
         state.trigger = trigger;
+        populateProduct(catalog.getProduct(nextProductId) || catalog.products[0]);
         resetPopup();
 
         overlay.hidden = false;
@@ -482,7 +473,7 @@
 
         button.addEventListener("click", event => {
             event.preventDefault();
-            openPopup(button);
+            openPopup(button, button.dataset.productId);
         });
     });
 
@@ -519,5 +510,6 @@
     addToCartButton.addEventListener("click", addToCart);
     shareButton.addEventListener("click", shareProduct);
 
+    populateProduct(catalog.getProduct(popup.dataset.productId) || catalog.products[0]);
     resetPopup();
 })();
